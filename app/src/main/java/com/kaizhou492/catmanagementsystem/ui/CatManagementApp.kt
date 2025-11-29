@@ -1,6 +1,7 @@
 package com.kaizhou492.catmanagementsystem.ui
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -65,7 +66,7 @@ fun CatManagementApp(dataManager: CatDataManager) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 )
             )
         },
@@ -285,51 +286,46 @@ fun CatteryScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            if (state.cats.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🐱", style = MaterialTheme.typography.displayLarge)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            strings.noCats,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+        if (state.cats.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("🐱", style = MaterialTheme.typography.displayLarge)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        strings.noCats,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.cats, key = { it.id }) { cat ->
-                        CatCard(
-                            cat = cat,
-                            showGiftMode = showGiftMode,
-                            isSelected = cat.id in selectedForGift,
-                            isEditing = editingCatId == cat.id,
-                            editingName = editingName,
-                            onCatClick = onCatClick,
-                            onNameClick = onNameClick,
-                            onNameChange = onNameChange,
-                            onNameSave = onNameSave,
-                            onGiftSelect = onGiftSelect
-                        )
-                    }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                items(state.cats, key = { it.id }) { cat ->
+                    CatCard(
+                        cat = cat,
+                        showGiftMode = showGiftMode,
+                        isSelected = cat.id in selectedForGift,
+                        isEditing = editingCatId == cat.id,
+                        editingName = editingName,
+                        onCatClick = onCatClick,
+                        onNameClick = onNameClick,
+                        onNameChange = onNameChange,
+                        onNameSave = onNameSave,
+                        onGiftSelect = onGiftSelect
+                    )
+                }
 
-                    // 添加底部间距
-                    if (showGiftMode) {
-                        item {
-                            Spacer(modifier = Modifier.height(80.dp))
-                        }
+                // 添加底部间距
+                if (showGiftMode) {
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }
@@ -344,9 +340,16 @@ fun CatteryScreen(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(
+                Button(
                     onClick = onExitGiftMode,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    // 使用 ButtonDefaults 来设置自定义颜色
+                    colors = ButtonDefaults.buttonColors(
+                        // 背景色使用次要容器颜色
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        // 内容（文字和图标）颜色使用在次要容器上的颜色
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 ) {
                     Text(strings.exitGift)
                 }
@@ -382,7 +385,7 @@ fun CatCard(
             containerColor = if (isSelected)
                 MaterialTheme.colorScheme.primaryContainer
             else
-                MaterialTheme.colorScheme.surface
+                MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
         Row(
@@ -481,7 +484,7 @@ fun OfficeScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             ) {
                 Column(
@@ -516,7 +519,7 @@ fun OfficeScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             ) {
                 Column(
@@ -574,6 +577,15 @@ fun OfficeScreen(
 
                     OutlinedButton(
                         onClick = onGiftClick,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                        border = BorderStroke(
+                            // 边框粗细
+                            width = 1.dp,
+                            // 边框颜色
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Default.CardGiftcard, contentDescription = null)
@@ -583,6 +595,15 @@ fun OfficeScreen(
 
                     OutlinedButton(
                         onClick = { showTransferDialog = true },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                        border = BorderStroke(
+                            // 边框粗细
+                            width = 1.dp,
+                            // 边框颜色
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Default.DeleteForever, contentDescription = null)

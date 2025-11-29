@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -479,136 +480,188 @@ fun OfficeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 喂养区域
+        // 喂养区域：将按钮改为可点击卡片，增加小字描述，禁用时变淡
         item {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (!state.autoFeederEnabled && !state.foodClickedThisWeek) 1f else 0.5f)
+                    .clickable(enabled = !state.autoFeederEnabled && !state.foodClickedThisWeek) {
+                        onFillFood()
+                    },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             ) {
-                Column(
+                Row(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(
-                        onClick = onFillFood,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !state.autoFeederEnabled && !state.foodClickedThisWeek
-                    ) {
-                        Icon(Icons.Default.SetMeal, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(strings.fillFood)
+                    val enabledFood = !state.autoFeederEnabled && !state.foodClickedThisWeek
+                    Icon(
+                        Icons.Default.SetMeal,
+                        contentDescription = null,
+                        tint = if (enabledFood) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(strings.fillFood, style = MaterialTheme.typography.titleMedium)
+                        val foodDesc = when {
+                            state.autoFeederEnabled -> strings.foodDescAuto
+                            state.foodClickedThisWeek -> strings.foodDescAlready
+                            else -> strings.foodDescTap
+                        }
+                        Text(
+                            foodDesc,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-
-                    Button(
-                        onClick = onFillWater,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !state.autoFeederEnabled && !state.waterClickedThisWeek
-                    ) {
-                        Icon(Icons.Default.WaterDrop, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(strings.fillWater)
-                    }
+                    // 点击指示（可选）
+                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null)
                 }
             }
         }
 
-        // 收养区域
+        // 喂水卡片：增加小字描述，禁用时变淡
         item {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (!state.autoFeederEnabled && !state.waterClickedThisWeek) 1f else 0.5f)
+                    .clickable(enabled = !state.autoFeederEnabled && !state.waterClickedThisWeek) {
+                        onFillWater()
+                    },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             ) {
-                Column(
+                Row(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(
-                        onClick = onAdoptClick,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = state.adoptionsThisWeek < 93
-                    ) {
-                        Icon(Icons.Default.Pets, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(strings.adoptCat)
+                    val enabledWater = !state.autoFeederEnabled && !state.waterClickedThisWeek
+                    Icon(
+                        Icons.Default.WaterDrop,
+                        contentDescription = null,
+                        tint = if (enabledWater) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(strings.fillWater, style = MaterialTheme.typography.titleMedium)
+                        val waterDesc = when {
+                            state.autoFeederEnabled -> strings.waterDescAuto
+                            state.waterClickedThisWeek -> strings.waterDescAlready
+                            else -> strings.waterDescTap
+                        }
+                        Text(
+                            waterDesc,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null)
+                }
+            }
+        }
 
+        // 收养区域：改为可点击卡片，显示剩余次数提示，禁用时变淡
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (state.adoptionsThisWeek < 93) 1f else 0.5f)
+                    .clickable(enabled = state.adoptionsThisWeek < 93) { onAdoptClick() },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val enabledAdopt = state.adoptionsThisWeek < 93
+                    Icon(Icons.Default.Pets, contentDescription = null, tint = if (enabledAdopt) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(strings.adoptCat, style = MaterialTheme.typography.titleMedium)
+                        val left = 3 - state.adoptionsThisWeek
+                        val adoptDesc = if (left > 0) String.format(strings.adoptLeftTemplate, left) else strings.adoptNone
+                        Text(
+                            text = adoptDesc,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null)
+                }
+            }
+        }
+
+        // 危险操作区：使用 error 配色的卡片，保持较强视觉提示
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${strings.adoptionsLeft}: ${3 - state.adoptionsThisWeek}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        strings.dangerZone,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        }
-
-        // 危险操作区
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                // 赠送猫（错误色调卡片）: 卡片内包含小字描述，描述放在图标右侧
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onGiftClick() },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            strings.dangerZone,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = onGiftClick,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error,
-                        ),
-                        border = BorderStroke(
-                            // 边框粗细
-                            width = 1.dp,
-                            // 边框颜色
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.CardGiftcard, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(strings.giftCat)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(strings.giftCat, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                strings.giftDesc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null)
                     }
+                }
 
-                    OutlinedButton(
-                        onClick = { showTransferDialog = true },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error,
-                        ),
-                        border = BorderStroke(
-                            // 边框粗细
-                            width = 1.dp,
-                            // 边框颜色
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                // 转让猫舍（错误色调卡片）: 卡片内包含小字描述，描述放在图标右侧
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showTransferDialog = true },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.DeleteForever, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(strings.transferCattery)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(strings.transferCattery, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                strings.transferDesc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null)
                     }
                 }
             }

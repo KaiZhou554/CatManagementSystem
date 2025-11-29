@@ -24,6 +24,7 @@ import androidx.compose.ui.window.Dialog
 import com.kaizhou492.catmanagementsystem.data.CatDataManager
 import com.kaizhou492.catmanagementsystem.models.Cat
 import com.kaizhou492.catmanagementsystem.models.CatteryState
+import com.kaizhou492.catmanagementsystem.svg.CatAvatar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -361,22 +362,11 @@ fun CatCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 猫咪图标
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Color(android.graphics.Color.parseColor(cat.skinColor))
-                            .copy(
-                                alpha = cat.saturation,
-                                red = cat.brightness
-                            )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("🐱", style = MaterialTheme.typography.headlineMedium)
-            }
+            // 使用 SVG 渲染的猫咪头像
+            CatAvatar(
+                cat = cat,
+                size = 64.dp
+            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -436,6 +426,7 @@ fun CatCard(
         }
     }
 }
+
 
 @Composable
 fun OfficeScreen(

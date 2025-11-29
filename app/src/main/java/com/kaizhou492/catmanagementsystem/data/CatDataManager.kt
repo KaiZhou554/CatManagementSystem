@@ -1,4 +1,7 @@
 package com.kaizhou492.catmanagementsystem.data
+// 每周可收养上限，修改此处即可调整全局限制
+
+
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -12,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlin.random.Random
-
+const val WEEKLY_ADOPTION_LIMIT = 99
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "cat_management")
 
 class CatDataManager(private val context: Context) {
@@ -95,7 +98,7 @@ class CatDataManager(private val context: Context) {
         }
 
         // 检查收养次数
-        if (newState.adoptionsThisWeek >= 93) {
+        if (newState.adoptionsThisWeek >= WEEKLY_ADOPTION_LIMIT) {
             return Result.failure(Exception("adoption_limit_reached"))
         }
 

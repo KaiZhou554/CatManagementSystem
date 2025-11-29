@@ -29,6 +29,7 @@ import com.kaizhou492.catmanagementsystem.models.Cat
 import com.kaizhou492.catmanagementsystem.models.CatteryState
 import com.kaizhou492.catmanagementsystem.svg.CatAvatar
 import kotlinx.coroutines.launch
+import com.kaizhou492.catmanagementsystem.data.WEEKLY_ADOPTION_LIMIT
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -557,8 +558,8 @@ fun OfficeScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(if (state.adoptionsThisWeek < 93) 1f else 0.5f)
-                    .clickable(enabled = state.adoptionsThisWeek < 93) { onAdoptClick() },
+                    .alpha(if (state.adoptionsThisWeek < WEEKLY_ADOPTION_LIMIT) 1f else 0.5f)
+                        .clickable(enabled = state.adoptionsThisWeek < WEEKLY_ADOPTION_LIMIT) { onAdoptClick() },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
@@ -567,12 +568,12 @@ fun OfficeScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val enabledAdopt = state.adoptionsThisWeek < 93
+                    val enabledAdopt = state.adoptionsThisWeek < WEEKLY_ADOPTION_LIMIT
                     Icon(Icons.Default.Pets, contentDescription = null, tint = if (enabledAdopt) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(strings.adoptCat, style = MaterialTheme.typography.titleMedium)
-                        val left = 3 - state.adoptionsThisWeek
+                        val left = WEEKLY_ADOPTION_LIMIT - state.adoptionsThisWeek
                         val adoptDesc = if (left > 0) String.format(strings.adoptLeftTemplate, left) else strings.adoptNone
                         Text(
                             text = adoptDesc,

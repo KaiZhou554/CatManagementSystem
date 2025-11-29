@@ -152,6 +152,10 @@ fun CatManagementApp(dataManager: CatDataManager) {
                             showGiftMode = false
                             snackbarMessage = strings.giftSuccess
                         }
+                    },
+                    onExitGiftMode = {
+                        showGiftMode = false
+                        selectedForGift = setOf()
                     }
                 )
 
@@ -275,57 +279,83 @@ fun CatteryScreen(
     onNameChange: (String) -> Unit,
     onNameSave: () -> Unit,
     onGiftSelect: (Long) -> Unit,
-    onConfirmGift: () -> Unit
+    onConfirmGift: () -> Unit,
+    onExitGiftMode: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (state.cats.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🐱", style = MaterialTheme.typography.displayLarge)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        strings.noCats,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            if (state.cats.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("🐱", style = MaterialTheme.typography.displayLarge)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            strings.noCats,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(state.cats, key = { it.id }) { cat ->
-                    CatCard(
-                        cat = cat,
-                        showGiftMode = showGiftMode,
-                        isSelected = cat.id in selectedForGift,
-                        isEditing = editingCatId == cat.id,
-                        editingName = editingName,
-                        onCatClick = onCatClick,
-                        onNameClick = onNameClick,
-                        onNameChange = onNameChange,
-                        onNameSave = onNameSave,
-                        onGiftSelect = onGiftSelect
-                    )
-                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.cats, key = { it.id }) { cat ->
+                        CatCard(
+                            cat = cat,
+                            showGiftMode = showGiftMode,
+                            isSelected = cat.id in selectedForGift,
+                            isEditing = editingCatId == cat.id,
+                            editingName = editingName,
+                            onCatClick = onCatClick,
+                            onNameClick = onNameClick,
+                            onNameChange = onNameChange,
+                            onNameSave = onNameSave,
+                            onGiftSelect = onGiftSelect
+                        )
+                    }
 
-                if (showGiftMode) {
-                    item {
-                        Button(
-                            onClick = onConfirmGift,
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = selectedForGift.isNotEmpty()
-                        ) {
-                            Text(strings.confirm)
+                    // 添加底部间距
+                    if (showGiftMode) {
+                        item {
+                            Spacer(modifier = Modifier.height(80.dp))
                         }
                     }
+                }
+            }
+        }
+
+        // 浮动按钮区域
+        if (showGiftMode) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onExitGiftMode,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(strings.exitGift)
+                }
+                Button(
+                    onClick = onConfirmGift,
+                    modifier = Modifier.weight(1f),
+                    enabled = selectedForGift.isNotEmpty()
+                ) {
+                    Text(strings.confirm)
                 }
             }
         }
@@ -496,7 +526,7 @@ fun OfficeScreen(
                     Button(
                         onClick = onAdoptClick,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = state.adoptionsThisWeek < 3
+                        enabled = state.adoptionsThisWeek < 93
                     ) {
                         Icon(Icons.Default.Pets, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))

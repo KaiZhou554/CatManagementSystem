@@ -31,6 +31,7 @@ interface Strings {
     val version: String
     val developer: String
     val noCats: String
+    val exitGift: String
 }
 
 object StringsZh : Strings {
@@ -64,6 +65,7 @@ object StringsZh : Strings {
     override val version = "版本 1.0.0"
     override val developer = "开发者: Claude"
     override val noCats = "还没有猫咪,快去收养吧!"
+    override val exitGift = "退出赠礼"
 }
 
 object StringsEn : Strings {
@@ -97,4 +99,5 @@ object StringsEn : Strings {
     override val version = "Version 1.0.0"
     override val developer = "Developer: Claude"
     override val noCats = "No cats yet, adopt one now!"
+    override val exitGift = "Exit Gift Mode"
 }

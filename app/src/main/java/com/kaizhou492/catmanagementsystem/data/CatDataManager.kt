@@ -96,7 +96,7 @@ class CatDataManager(private val context: Context) {
         }
 
         // 检查收养次数
-        if (newState.adoptionsThisWeek >= 3) {
+        if (newState.adoptionsThisWeek >= 93) {
             return Result.failure(Exception("adoption_limit_reached"))
         }
 

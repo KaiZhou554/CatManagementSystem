@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -187,46 +188,27 @@ fun CatManagementApp(dataManager: CatDataManager) {
         }
     }
 
-// 设置侧边栏
-    if (showSettings) {
-        // 1. 将 drawerState 提取出来，以便在 LaunchedEffect 中访问
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
-
-        // 2. 使用 LaunchedEffect 监听抽屉状态
-        //    当 drawerState.isClosed 变为 true 时，将 showSettings 设为 false
-        LaunchedEffect(drawerState.isClosed) {
-            if (drawerState.isClosed) {
-                showSettings = false
-            }
-        }
-
-        ModalNavigationDrawer(
-            drawerState = drawerState, // 使用我们上面定义的 state
-            drawerContent = {
-                SettingsDrawer(
-                    state = state,
-                    strings = strings,
-                    onAutoFeederToggle = { enabled ->
-                        scope.launch {
-                            dataManager.toggleAutoFeeder(enabled)
-                        }
-                    },
-                    onLanguageChange = { lang ->
-                        scope.launch {
-                            dataManager.setLanguage(lang)
-                        }
-                    },
-                    // 当在侧边栏内部点击关闭时，主动将 showSettings 设为 false
-                    onDismiss = { showSettings = false }
-                )
+// 设置页面（将原侧边栏改为二级页面），带进入/退出动画
+    AnimatedVisibility(
+        visible = showSettings,
+        enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
+        exit = slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth }) + fadeOut()
+    ) {
+        SettingsScreen(
+            state = state,
+            strings = strings,
+            onAutoFeederToggle = { enabled ->
+                scope.launch {
+                    dataManager.toggleAutoFeeder(enabled)
+                }
             },
-            // gesturesEnabled 默认就是 true，可以不写
-            // gesturesEnabled = true
-        ) {
-            // 这个 content lambda 是为主屏幕内容准备的，
-            // 但在你的结构中，主屏幕内容由 Scaffold 管理。
-            // 所以这里保持为空是正确的。
-        }
+            onLanguageChange = { lang ->
+                scope.launch {
+                    dataManager.setLanguage(lang)
+                }
+            },
+            onBack = { showSettings = false }
+        )
     }
 
     // 收养确认对话框
@@ -771,6 +753,105 @@ fun SettingsDrawer(
                     strings.developer,
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    state: CatteryState,
+    strings: Strings,
+    onAutoFeederToggle: (Boolean) -> Unit,
+    onLanguageChange: (String) -> Unit,
+    onBack: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(strings.settings) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = strings.cancel)
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 标题
+            Text(
+                strings.settings,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            // 自动喂养器卡片
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(strings.autoFeeder, style = MaterialTheme.typography.titleMedium)
+                    }
+                    Switch(
+                        checked = state.autoFeederEnabled,
+                        onCheckedChange = onAutoFeederToggle
+                    )
+                }
+            }
+
+            // 语言卡片
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Language / 语言", style = MaterialTheme.typography.titleMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = state.language == "zh",
+                            onClick = { onLanguageChange("zh") },
+                            label = { Text("简体中文") }
+                        )
+                        FilterChip(
+                            selected = state.language == "en",
+                            onClick = { onLanguageChange("en") },
+                            label = { Text("English") }
+                        )
+                    }
+                }
+            }
+
+            // 关于卡片
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(strings.about, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(strings.version, style = MaterialTheme.typography.bodyMedium)
+                    Text(strings.developer, style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
     }

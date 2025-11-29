@@ -36,6 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
+import com.kaizhou492.catmanagementsystem.ui.theme.OleoScript
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatManagementApp(dataManager: CatDataManager) {
@@ -67,7 +72,10 @@ fun CatManagementApp(dataManager: CatDataManager) {
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(strings.appTitle) },
+                title = {             Text(
+                    text = "Raise Cats",
+                    fontFamily = OleoScript
+                ) },
                 actions = {
                     IconButton(onClick = { showSettings = true }) {
                         Icon(Icons.Default.Settings, contentDescription = strings.settings)

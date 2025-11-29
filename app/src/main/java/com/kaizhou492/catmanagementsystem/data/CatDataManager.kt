@@ -1,7 +1,4 @@
 package com.kaizhou492.catmanagementsystem.data
-// 每周可收养上限，修改此处即可调整全局限制
-
-
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -42,7 +39,7 @@ class CatDataManager(private val context: Context) {
     )
 
     private val defaultColors = listOf(
-        "#90EE90", "#D2B48C", "#FFD700", "#FFFFE0",
+        "#D3D3D3", "#D2B48C", "#FFD700", "#FFFFE0",
         "#DAA520", "#FFA500", "#CD853F"
     )
 

@@ -26,8 +26,10 @@ data class CatteryState(
     val cats: List<Cat> = emptyList(),
     val adoptionsThisWeek: Int = 0,
     val weekStartTime: Long = System.currentTimeMillis(),
-    val foodClickedThisWeek: Boolean = false,
-    val waterClickedThisWeek: Boolean = false,
+    // 新增每天重置相关字段：用于控制猫粮碗/水盆每天可操作一次
+    val dayStartTime: Long = System.currentTimeMillis(),
+    val foodClickedToday: Boolean = false,
+    val waterClickedToday: Boolean = false,
     val autoFeederEnabled: Boolean = false,
     val language: String = "zh",
     val pityCounter: Int = 0, // 小保底计数

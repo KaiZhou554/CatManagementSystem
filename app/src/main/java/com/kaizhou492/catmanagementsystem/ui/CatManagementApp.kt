@@ -30,6 +30,11 @@ import com.kaizhou492.catmanagementsystem.models.CatteryState
 import com.kaizhou492.catmanagementsystem.svg.CatAvatar
 import kotlinx.coroutines.launch
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatManagementApp(dataManager: CatDataManager) {
@@ -467,8 +472,8 @@ fun OfficeScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(if (!state.autoFeederEnabled && !state.foodClickedThisWeek) 1f else 0.5f)
-                    .clickable(enabled = !state.autoFeederEnabled && !state.foodClickedThisWeek) {
+                    .alpha(if (!state.autoFeederEnabled && !state.foodClickedToday) 1f else 0.5f)
+                    .clickable(enabled = !state.autoFeederEnabled && !state.foodClickedToday) {
                         onFillFood()
                     },
                 colors = CardDefaults.cardColors(
@@ -479,7 +484,7 @@ fun OfficeScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val enabledFood = !state.autoFeederEnabled && !state.foodClickedThisWeek
+                    val enabledFood = !state.autoFeederEnabled && !state.foodClickedToday
                     Icon(
                         Icons.Default.SetMeal,
                         contentDescription = null,
@@ -490,7 +495,7 @@ fun OfficeScreen(
                         Text(strings.fillFood, style = MaterialTheme.typography.titleMedium)
                         val foodDesc = when {
                             state.autoFeederEnabled -> strings.foodDescAuto
-                            state.foodClickedThisWeek -> strings.foodDescAlready
+                            state.foodClickedToday -> strings.foodDescAlready
                             else -> strings.foodDescTap
                         }
                         Text(
@@ -510,8 +515,8 @@ fun OfficeScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(if (!state.autoFeederEnabled && !state.waterClickedThisWeek) 1f else 0.5f)
-                    .clickable(enabled = !state.autoFeederEnabled && !state.waterClickedThisWeek) {
+                    .alpha(if (!state.autoFeederEnabled && !state.waterClickedToday) 1f else 0.5f)
+                    .clickable(enabled = !state.autoFeederEnabled && !state.waterClickedToday) {
                         onFillWater()
                     },
                 colors = CardDefaults.cardColors(
@@ -522,7 +527,7 @@ fun OfficeScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val enabledWater = !state.autoFeederEnabled && !state.waterClickedThisWeek
+                    val enabledWater = !state.autoFeederEnabled && !state.waterClickedToday
                     Icon(
                         Icons.Default.WaterDrop,
                         contentDescription = null,
@@ -533,7 +538,7 @@ fun OfficeScreen(
                         Text(strings.fillWater, style = MaterialTheme.typography.titleMedium)
                         val waterDesc = when {
                             state.autoFeederEnabled -> strings.waterDescAuto
-                            state.waterClickedThisWeek -> strings.waterDescAlready
+                            state.waterClickedToday -> strings.waterDescAlready
                             else -> strings.waterDescTap
                         }
                         Text(
@@ -673,92 +678,6 @@ fun OfficeScreen(
     }
 }
 
-@Composable
-fun SettingsDrawer(
-    state: CatteryState,
-    strings: Strings,
-    onAutoFeederToggle: (Boolean) -> Unit,
-    onLanguageChange: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    ModalDrawerSheet(
-        modifier = Modifier.width(300.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                strings.settings,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Divider()
-
-            // 自动喂养器
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(strings.autoFeeder)
-                Switch(
-                    checked = state.autoFeederEnabled,
-                    onCheckedChange = onAutoFeederToggle
-                )
-            }
-
-            Divider()
-
-            // 语言选择
-            Text(
-                "Language / 语言",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = state.language == "zh",
-                    onClick = { onLanguageChange("zh") },
-                    label = { Text("简体中文") }
-                )
-                FilterChip(
-                    selected = state.language == "en",
-                    onClick = { onLanguageChange("en") },
-                    label = { Text("English") }
-                )
-            }
-
-            Divider()
-
-            // 关于
-            Column {
-                Text(
-                    strings.about,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    strings.version,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    strings.developer,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -768,6 +687,65 @@ fun SettingsScreen(
     onLanguageChange: (String) -> Unit,
     onBack: () -> Unit
 ) {
+
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
+    // 当 showLanguageDialog 为 true 时，显示 AlertDialog
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text("Language / 语言") },
+            text = {
+                // 对话框内容，提供语言选项
+                Column {
+                    // 中文选项
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onLanguageChange("zh")
+                                showLanguageDialog = false
+                            }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = state.language == "zh",
+                            onClick = null // 点击事件在 Row 上处理
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("简体中文")
+                    }
+                    // 英文选项
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onLanguageChange("en")
+                                showLanguageDialog = false
+                            }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = state.language == "en",
+                            onClick = null
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("English")
+                    }
+                }
+            },
+            confirmButton = {
+                // 对话框通常只需要一个关闭按钮
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(strings.cancel)
+                }
+            }
+        )
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -819,26 +797,36 @@ fun SettingsScreen(
 
             // 语言卡片
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showLanguageDialog = true }, // 点击卡片以显示对话框
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Language / 语言", style = MaterialTheme.typography.titleMedium)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(
-                            selected = state.language == "zh",
-                            onClick = { onLanguageChange("zh") },
-                            label = { Text("简体中文") }
-                        )
-                        FilterChip(
-                            selected = state.language == "en",
-                            onClick = { onLanguageChange("en") },
-                            label = { Text("English") }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Language / 语言", style = MaterialTheme.typography.titleMedium)
+                        // 显示当前选择的语言
+                        val currentLanguage = if (state.language == "zh") "简体中文" else "English"
+                        Text(
+                            currentLanguage,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Select Language"
+                    )
                 }
             }
+
 
             // 关于卡片
             Card(

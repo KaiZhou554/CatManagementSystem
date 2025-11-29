@@ -84,12 +84,11 @@ class CatDataManager(private val context: Context) {
         val currentTime = System.currentTimeMillis()
 
         // 检查是否需要重置周计数（简化版：7天一周）
+        // 仅重置收养相关的每周计数，不再把每日的食物/水标记放在这里重置
         val newState = if (currentTime - state.weekStartTime > 7 * 24 * 60 * 60 * 1000L) {
             state.copy(
                 adoptionsThisWeek = 0,
-                weekStartTime = currentTime,
-                foodClickedThisWeek = false,
-                waterClickedThisWeek = false
+                weekStartTime = currentTime
             )
         } else {
             state
@@ -205,10 +204,21 @@ class CatDataManager(private val context: Context) {
         val state = getState()
         val currentTime = System.currentTimeMillis()
 
-        val newState = state.copy(foodClickedThisWeek = true)
+        // 检查并按天重置每天的标记（24小时）
+        val baseState = if (currentTime - state.dayStartTime > 24 * 60 * 60 * 1000L) {
+            state.copy(
+                dayStartTime = currentTime,
+                foodClickedToday = false,
+                waterClickedToday = false
+            )
+        } else {
+            state
+        }
 
-        // 如果水盆也点击了，重置所有猫咪状态
-        if (newState.waterClickedThisWeek) {
+        val newState = baseState.copy(foodClickedToday = true)
+
+        // 如果水盆也在同一天被点击了，重置所有猫咪状态
+        if (newState.waterClickedToday) {
             val updatedCats = newState.cats.map { cat ->
                 cat.copy(
                     lastFedTime = currentTime,
@@ -229,10 +239,21 @@ class CatDataManager(private val context: Context) {
         val state = getState()
         val currentTime = System.currentTimeMillis()
 
-        val newState = state.copy(waterClickedThisWeek = true)
+        // 检查并按天重置每天的标记（24小时）
+        val baseState = if (currentTime - state.dayStartTime > 24 * 60 * 60 * 1000L) {
+            state.copy(
+                dayStartTime = currentTime,
+                foodClickedToday = false,
+                waterClickedToday = false
+            )
+        } else {
+            state
+        }
 
-        // 如果猫粮碗也点击了，重置所有猫咪状态
-        if (newState.foodClickedThisWeek) {
+        val newState = baseState.copy(waterClickedToday = true)
+
+        // 如果猫粮碗也在同一天被点击了，重置所有猫咪状态
+        if (newState.foodClickedToday) {
             val updatedCats = newState.cats.map { cat ->
                 cat.copy(
                     lastFedTime = currentTime,
@@ -259,9 +280,12 @@ class CatDataManager(private val context: Context) {
     // 转让猫舍
     suspend fun transferCattery(): Result<Unit> {
         val currentTime = System.currentTimeMillis()
+        // 转让时重置周计数和当天标记
+        val old = getState()
         saveState(CatteryState(
             weekStartTime = currentTime,
-            language = getState().language // 保留语言设置
+            dayStartTime = currentTime,
+            language = old.language // 保留语言设置
         ))
         return Result.success(Unit)
     }

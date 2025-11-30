@@ -44,6 +44,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.BackHandler
 
 
 fun openUrl(context: Context, url: String) {
@@ -72,6 +73,10 @@ fun CatManagementApp(dataManager: CatDataManager) {
     val strings = if (state.language == "zh") StringsZh else StringsEn
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    BackHandler(enabled = showSettings) {
+        showSettings = false // 关闭 SettingsScreen
+    }
 
     // 显示提示信息
     LaunchedEffect(snackbarMessage) {
@@ -215,7 +220,7 @@ fun CatManagementApp(dataManager: CatDataManager) {
         }
     }
 
-// 设置页面（将原侧边栏改为二级页面），带进入/退出动画
+// 设置页面
     AnimatedVisibility(
         visible = showSettings,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
@@ -844,7 +849,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Language / 语言", style = MaterialTheme.typography.titleMedium)
+                        Text(strings.languageTheWord, style = MaterialTheme.typography.titleMedium)
                         // 显示当前选择的语言
                         val currentLanguage = if (state.language == "zh") "简体中文" else "English"
                         Text(

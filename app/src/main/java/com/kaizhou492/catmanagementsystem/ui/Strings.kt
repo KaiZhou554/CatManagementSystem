@@ -47,6 +47,7 @@ interface Strings {
     val sourceCode: String
     val sourceCodeLink: String
     val versionNumber: String
+    val languageTheWord: String
 }
 
 object StringsZh : Strings {
@@ -95,6 +96,7 @@ object StringsZh : Strings {
     override val sourceCode = "源代码"
     override val sourceCodeLink = "GitHub 项目主页"
     override val versionNumber = "1.1.0"
+    override val languageTheWord = "语言"
 }
 
 object StringsEn : Strings {
@@ -143,4 +145,5 @@ object StringsEn : Strings {
     override val sourceCode = "Source Code"
     override val sourceCodeLink = "GitHub Project Home"
     override val versionNumber = "1.1.0"
+    override val languageTheWord = "Language"
 }

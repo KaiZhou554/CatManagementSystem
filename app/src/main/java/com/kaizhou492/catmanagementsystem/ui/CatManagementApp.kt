@@ -136,6 +136,7 @@ fun CatManagementApp(dataManager: CatDataManager) {
                 "cattery" -> CatteryScreen(
                     state = state,
                     strings = strings,
+                    dataManager = dataManager,
                     showGiftMode = showGiftMode,
                     selectedForGift = selectedForGift,
                     editingCatId = editingCatId,
@@ -286,6 +287,7 @@ fun CatManagementApp(dataManager: CatDataManager) {
 fun CatteryScreen(
     state: CatteryState,
     strings: Strings,
+    dataManager: com.kaizhou492.catmanagementsystem.data.CatDataManager,
     showGiftMode: Boolean,
     selectedForGift: Set<Long>,
     editingCatId: Long?,
@@ -325,6 +327,8 @@ fun CatteryScreen(
                 items(state.cats, key = { it.id }) { cat ->
                     CatCard(
                         cat = cat,
+                        dataManager = dataManager,
+                        strings = strings,
                         showGiftMode = showGiftMode,
                         isSelected = cat.id in selectedForGift,
                         isEditing = editingCatId == cat.id,
@@ -383,6 +387,8 @@ fun CatteryScreen(
 @Composable
 fun CatCard(
     cat: Cat,
+    dataManager: com.kaizhou492.catmanagementsystem.data.CatDataManager,
+    strings: Strings,
     showGiftMode: Boolean,
     isSelected: Boolean,
     isEditing: Boolean,
@@ -433,20 +439,27 @@ fun CatCard(
                         }
                     }
                 } else {
-                    Text(
-                        text = cat.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.clickable { onNameClick(cat) }
-                    )
+                        // 名字（保持原样）
+                        Text(
+                            text = cat.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.clickable { onNameClick(cat) }
+                        )
                 }
-                Text(
-                    text = cat.breed,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    // 品种及其概率放在品种文字后面（same line, same style）
+                    val localizedBreed = strings.localizedBreed(cat.breed)
+                    val prob = dataManager.probabilityForCat(cat)
+                    val probText = String.format("%.1f%%", prob * 100)
+                    Text(
+                        text = "$localizedBreed  $probText",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
             }
 
             // 互动按钮或选择框

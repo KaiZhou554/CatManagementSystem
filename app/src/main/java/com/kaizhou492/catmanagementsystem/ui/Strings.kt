@@ -48,6 +48,8 @@ interface Strings {
     val sourceCodeLink: String
     val versionNumber: String
     val languageTheWord: String
+    // 根据传入的品种标识返回本地化显示名（例如英文显示对应英文名）
+    fun localizedBreed(breedName: String): String
 }
 
 object StringsZh : Strings {
@@ -97,6 +99,21 @@ object StringsZh : Strings {
     override val sourceCodeLink = "GitHub 项目主页"
     override val versionNumber = "1.1.0"
     override val languageTheWord = "语言"
+    override fun localizedBreed(breedName: String): String {
+        val map = mapOf(
+            "橘猫" to "橘猫",
+            "布偶猫" to "布偶猫",
+            "暹罗猫" to "暹罗猫",
+            "蓝猫" to "蓝猫",
+            "三花猫" to "三花猫",
+            "无毛猫" to "无毛猫",
+            "奶牛猫" to "奶牛猫",
+            "狸花猫" to "狸花猫",
+            "缅因猫" to "缅因猫",
+            "默认猫咪" to "猫"
+        )
+        return map[breedName] ?: "未来的猫"
+    }
 }
 
 object StringsEn : Strings {
@@ -146,4 +163,19 @@ object StringsEn : Strings {
     override val sourceCodeLink = "GitHub Project Home"
     override val versionNumber = "1.1.0"
     override val languageTheWord = "Language"
+    override fun localizedBreed(breedName: String): String {
+        val map = mapOf(
+            "橘猫" to "Ginger",
+            "布偶猫" to "Ragdoll",
+            "暹罗猫" to "Siamese",
+            "蓝猫" to "British Shorthair",
+            "三花猫" to "Calico",
+            "无毛猫" to "Sphynx",
+            "奶牛猫" to "Cow-pattern",
+            "狸花猫" to "Tabby",
+            "缅因猫" to "Maine Coon",
+            "默认猫咪" to "Cat"
+        )
+        return map[breedName] ?: "Cat from future"
+    }
 }

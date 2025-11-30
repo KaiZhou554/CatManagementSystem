@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlin.random.Random
+
 const val WEEKLY_ADOPTION_LIMIT = 99
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "cat_management")
 
@@ -28,22 +29,105 @@ class CatDataManager(private val context: Context) {
 
     private val breeds = listOf(
         BreedInfo("橘猫", listOf("#FFA500", "#FF8C00", "#CD5700"), "#8B4513"),
-        BreedInfo("布偶猫", listOf("#F5E6D3", "#E8D5C4"), "#B0C4DE"),
-        BreedInfo("暹罗猫", listOf("#F5DEB3", "#D2B48C"), "#9370DB"),
-        BreedInfo("蓝猫", listOf("#708090", "#778899"), "#FF8C00"),
-        BreedInfo("三花猫", listOf("#FFFFFF", "#000000", "#FFA500"), "#00CED1"),
-        BreedInfo("无毛猫", listOf("#FFE4C4", "#F5DEB3"), "#FFD700"),
-        BreedInfo("奶牛猫", listOf("#000000", "#FFFFFF"), "#87CEEB"),
-        BreedInfo("狸花猫", listOf("#8B7355", "#A0826D"), "#DAA520"),
-        BreedInfo("缅因猫", listOf("#8B4513", "#A0522D"), "#87CEEB")
+        BreedInfo("布偶猫", listOf("#87CEEB", "#59b093"), "#B0C4DE"),
+        BreedInfo("暹罗猫", listOf("#4169E1", "#2c2cdb"), "#9370DB"),
+        BreedInfo("蓝猫", listOf("#CD7F32", "#01b55b"), "#FFA500"),
+        BreedInfo("三花猫", listOf("#b6b675", "#32CD32"), "#00CED1"),
+        BreedInfo("无毛猫", listOf("#2E8B57", "#6495ED"), "#FFC107"),
+        BreedInfo("奶牛猫", listOf("#FFFACD", "#E6C200"), "#87CEEB"),
+        BreedInfo("狸花猫", listOf("#4F9D53"), "#DAA520"),
+        BreedInfo("缅因猫", listOf("#f2ff00ff", "#00FA9A"), "#20c0ff")
     )
+
+    // 对外提供的常量和方法，用于 UI 计算展示概率和本地化品种名
+    companion object {
+        const val BASE_BREED_PROBABILITY = 0.15
+    }
+
+    // 稀有瞳色概率常量
+    private val RARE_EYES_PRO_BREED = 0.20
+    private val RARE_EYES_PRO_DEFAULT = 0.10
+
+    // 返回 "默认猫咪" 的概率
+    fun defaultCatProbability(): Double = 1.0 - BASE_BREED_PROBABILITY
+
+    // 返回某一品种在一次收养中被抽中的概率（不考虑保底）。
+    // 非 "默认猫咪" 的每个品种均分 BASE_BREED_PROBABILITY
+    fun perBreedProbability(breedName: String): Double {
+        return if (breedName == "默认猫咪") {
+            defaultCatProbability()
+        } else {
+            if (breeds.isEmpty()) 0.0 else BASE_BREED_PROBABILITY / breeds.size
+        }
+    }
+
+    // 返回在收养到指定品种的前提下，获得稀有瞳色的联合概率 (P(breed) * P(rare | breed))
+    fun perBreedWithRareEyesProbability(breedName: String): Double {
+        val pBreed = perBreedProbability(breedName)
+        val pRareGiven = if (breedName == "默认猫咪") RARE_EYES_PRO_DEFAULT else RARE_EYES_PRO_BREED
+        return pBreed * pRareGiven
+    }
+
+    // 返回给定猫（包括其品种与瞳色）的联合概率 P(breed) * P(eyeType | breed)
+    fun probabilityForCat(cat: com.kaizhou492.catmanagementsystem.models.Cat): Double {
+        val breedName = cat.breed
+        val pBreed = perBreedProbability(breedName)
+
+        val isRareEye = if (breedName == "默认猫咪") {
+            // 对于默认猫，稀有瞳色来自 defaultRareColors
+            defaultRareColors.contains(cat.eyeColor)
+        } else {
+            // 找到对应品种的 rareEyeColor
+            val info = breeds.find { it.name == breedName }
+            info?.rareEyeColor == cat.eyeColor
+        }
+
+        val pRareGiven = if (breedName == "默认猫咪") RARE_EYES_PRO_DEFAULT else RARE_EYES_PRO_BREED
+        val pEyeGiven = if (isRareEye) pRareGiven else (1.0 - pRareGiven)
+
+        return pBreed * pEyeGiven
+    }
 
     private val defaultColors = listOf(
-        "#D3D3D3", "#D2B48C", "#FFD700", "#FFFFE0",
-        "#DAA520", "#FFA500", "#CD853F"
+        // 白色系
+        "#F8F8FF",   // 雪白色
+        "#FFFFF0",   // 米白色
+        "#F5F5F5",   // 奶白色
+        // 黑色系
+        "#0A0A0A",   // 纯黑色
+        "#1A1A1A",   // 深黑色（带轻微光泽）
+        "#2D2D2D",   // 炭黑色
+        // 灰色系
+        "#808080",   // 中灰色
+        "#A9A9A9",   // 浅灰色
+        "#4A4A4A",   // 深灰色
+        "#C0C0C0",   // 银灰色
+        "#E0E0E0",   // 烟灰色
+        // 橘色系
+        "#FFA500",   // 亮橙色
+        "#FF8C00",   // 深橙色
+        "#FFB347",   // 浅橘色
+        "#E67E22",   // 橙棕色
+        // 棕色系
+        "#8B4513",   // 深棕色
+        "#A0522D",   // 红棕色
+        "#CD853F",   // 浅棕色
+
     )
 
-    private val defaultRareColors = listOf("#4169E1", "#DDA0DD", "#FFB6C1")
+    private val defaultEyeColors = listOf(
+        // 常见瞳色
+        "#228B22",   // 绿色
+        "#D2B48C",   // 淡褐色
+        "#FFD700",   // 金黄色
+        "#fff494",   // 柠檬黄色
+        "#DAA520",   // 琥珀色
+        "#FF8C00",   // 橙色
+        "#B87333",   // 铜色
+
+    )
+
+    private val defaultRareColors = listOf("#4977ff", "#ff65ff", "#ff3a57")
 
     private val emojis = listOf(
         "😊", "😺", "😸", "😻", "🥰", "😽", "🤗", "💖", "✨", "🌟"
@@ -61,6 +145,8 @@ class CatDataManager(private val context: Context) {
             CatteryState()
         }
     }
+
+    // 品种本地化由 `Strings` 接口提供 (Strings.kt)，此处保留数据逻辑
 
     suspend fun getState(): CatteryState {
         return stateFlow.first()
@@ -282,11 +368,13 @@ class CatDataManager(private val context: Context) {
         val currentTime = System.currentTimeMillis()
         // 转让时重置周计数和当天标记
         val old = getState()
-        saveState(CatteryState(
-            weekStartTime = currentTime,
-            dayStartTime = currentTime,
-            language = old.language // 保留语言设置
-        ))
+        saveState(
+            CatteryState(
+                weekStartTime = currentTime,
+                dayStartTime = currentTime,
+                language = old.language // 保留语言设置
+            )
+        )
         return Result.success(Unit)
     }
 
@@ -308,10 +396,12 @@ class CatDataManager(private val context: Context) {
             state.cats
         }
 
-        saveState(state.copy(
-            autoFeederEnabled = enabled,
-            cats = updatedCats
-        ))
+        saveState(
+            state.copy(
+                autoFeederEnabled = enabled,
+                cats = updatedCats
+            )
+        )
         return Result.success(Unit)
     }
 
@@ -369,7 +459,8 @@ class CatDataManager(private val context: Context) {
             }
 
             if (newSaturation != cat.saturation || newBrightness != cat.brightness ||
-                interacted != cat.interacted) {
+                interacted != cat.interacted
+            ) {
                 needsUpdate = true
             }
 

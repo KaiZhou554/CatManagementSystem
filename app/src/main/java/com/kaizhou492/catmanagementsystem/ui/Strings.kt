@@ -44,6 +44,9 @@ interface Strings {
     val dangerZoneDesc: String
     val giftDesc: String
     val transferDesc: String
+    val sourceCode: String
+    val sourceCodeLink: String
+    val versionNumber: String
 }
 
 object StringsZh : Strings {
@@ -64,7 +67,7 @@ object StringsZh : Strings {
     override val confirm = "确认"
     override val cancel = "取消"
     override val adoptSuccess = "收养成功!"
-    override val adoptLimitReached = "本周收养次数已达上限(3只),下周可继续收养"
+    override val adoptLimitReached = "本周收养次数已达上限,下周可继续收养"
     override val giftSuccess = "赠送成功!"
     override val selectCatsToGift = "选择要赠送的猫咪"
     override val confirmTransfer = "确认转让猫舍?所有猫咪和本周收养记录将被清空,不可恢复"
@@ -74,7 +77,7 @@ object StringsZh : Strings {
     override val emptyName = "名字不可为空"
     override val editName = "编辑名字"
     override val save = "保存"
-    override val version = "版本 1.0.0"
+    override val version = "版本"
     override val developer = "开发者: Claude"
     override val noCats = "还没有猫咪,快去收养吧!"
     override val exitGift = "退出赠礼"
@@ -89,6 +92,9 @@ object StringsZh : Strings {
     override val dangerZoneDesc = "危险操作可能导致数据丢失, 请谨慎操作"
     override val giftDesc = "赠送猫将从你的猫舍中移除选中的猫咪"
     override val transferDesc = "转让猫舍会永久清空所有猫咪和记录, 操作不可撤销"
+    override val sourceCode = "源代码"
+    override val sourceCodeLink = "GitHub 项目主页"
+    override val versionNumber = "1.1.0"
 }
 
 object StringsEn : Strings {
@@ -109,7 +115,7 @@ object StringsEn : Strings {
     override val confirm = "Confirm"
     override val cancel = "Cancel"
     override val adoptSuccess = "Adoption successful!"
-    override val adoptLimitReached = "Weekly adoption limit reached (3 cats), try again next week"
+    override val adoptLimitReached = "Weekly adoption limit reached, try again next week"
     override val giftSuccess = "Gift successful!"
     override val selectCatsToGift = "Select cats to gift"
     override val confirmTransfer = "Confirm transfer? All cats and adoption records will be cleared permanently"
@@ -119,7 +125,7 @@ object StringsEn : Strings {
     override val emptyName = "Name cannot be empty"
     override val editName = "Edit Name"
     override val save = "Save"
-    override val version = "Version 1.0.0"
+    override val version = "Version"
     override val developer = "Developer: Claude"
     override val noCats = "No cats yet, adopt one now!"
     override val exitGift = "Exit Gift Mode"
@@ -134,4 +140,7 @@ object StringsEn : Strings {
     override val dangerZoneDesc = "Dangerous actions may cause data loss. Proceed with caution."
     override val giftDesc = "Gifting will remove selected cats from your cattery"
     override val transferDesc = "Transferring the cattery will permanently clear all cats and records"
+    override val sourceCode = "Source Code"
+    override val sourceCodeLink = "GitHub Project Home"
+    override val versionNumber = "1.1.0"
 }
